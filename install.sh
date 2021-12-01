@@ -95,16 +95,16 @@ installQbusMqttGw(){
 	sudo cp qbusMqtt/qbusMqtt/qbusMqttGw-arm/qbusMqttGw /usr/bin/qbus/ > /dev/null 2>&1
 	createMqttService
 	# Create directory for logging
-  LOG=$(cat /etc/logrotate.d/qbus 2>/dev/null)
-  if [[ $LOG != "" ]]; then
-  	sudo mkdir /var/log/qbus/ > /dev/null 2>&1
-  	sudo touch /etc/logrotate.d/qbus > /dev/null 2>&1
-  	echo '/var/log/qbus/*.log {' | sudo tee -a /etc/logrotate.d/qbus > /dev/null 2>&1
-  	echo '        daily' | sudo tee -a /etc/logrotate.d/qbus > /dev/null 2>&1
-  	echo '        rotate 7' | sudo tee -a /etc/logrotate.d/qbus > /dev/null 2>&1
-  	echo '        size 10M' | sudo tee -a /etc/logrotate.d/qbus > /dev/null 2>&1
-  	echo '        compress' | sudo tee -a /etc/logrotate.d/qbus > /dev/null 2>&1
-  	echo '        delaycompress' | sudo tee -a /etc/logrotate.d/qbus > /dev/null 2>&1
+	LOG=$(cat /etc/logrotate.d/qbus 2>/dev/null)
+	if [[ $LOG != "" ]]; then
+		sudo mkdir /var/log/qbus/ > /dev/null 2>&1
+		sudo touch /etc/logrotate.d/qbus > /dev/null 2>&1
+		echo '/var/log/qbus/*.log {' | sudo tee -a /etc/logrotate.d/qbus > /dev/null 2>&1
+		echo '        daily' | sudo tee -a /etc/logrotate.d/qbus > /dev/null 2>&1
+		echo '        rotate 7' | sudo tee -a /etc/logrotate.d/qbus > /dev/null 2>&1
+		echo '        size 10M' | sudo tee -a /etc/logrotate.d/qbus > /dev/null 2>&1
+		echo '        compress' | sudo tee -a /etc/logrotate.d/qbus > /dev/null 2>&1
+		echo '        delaycompress' | sudo tee -a /etc/logrotate.d/qbus > /dev/null 2>&1
 	fi
  
 	kill -9 $SPIN_PID
@@ -286,13 +286,13 @@ installMosquitto(){
 	SPIN_PID=$!
 	trap "kill -9 $SPIN_PID" `seq 0 15`
  
-  sudo apt-get install -y mosquitto > /dev/null 2>&1
+	sudo apt-get install -y mosquitto > /dev/null 2>&1
   
-  kill -9 $SPIN_PID
+	kill -9 $SPIN_PID
 	
-  DISPLTEXT='     -Enter a password for the MQTT server and repeat it: '
-  DISPLCOLOR=${YELLOW}
-  echoInColor
+	DISPLTEXT='     -Enter a password for the MQTT server and repeat it: '
+	DISPLCOLOR=${YELLOW}
+	echoInColor
   
 	sudo mosquitto_passwd -c /etc/mosquitto/pass $USER
  
