@@ -3,7 +3,10 @@
 # ============================== Define variables ==============================
 USER=''
 PASSWORD=''
+MQTTIP='localhost'
+MQTTPORT='1883'
 MOSQUITTO=''
+INSTMOS=''
 OH=''
 OH2=''
 OH3=''
@@ -66,7 +69,7 @@ createMqttService(){
 	echo '' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
 	echo '[Service]' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
 	echo 'Type=simple' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
-	echo 'ExecStart= /usr/bin/qbus/qbusMqtt/./qbusMqttGw -serial="QBUSMQTTGW" -logbuflevel -1 -log_dir /var/log/qbus -max_log_size=10 -storagedir /opt/qbus -mqttbroker "tcp://localhost:1883" -mqttuser '$USER' -mqttpassword '$PASSWORD''| sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
+	echo 'ExecStart= /usr/bin/qbus/qbusMqttGw/./qbusMqttGw -serial="QBUSMQTTGW" -logbuflevel -1 -log_dir /var/log/qbus -max_log_size=10 -storagedir /opt/qbus -mqttbroker "tcp://'$MQTTIP':'$MQTTPORT'" -mqttuser '$USER' -mqttpassword '$PASSWORD''| sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
 	echo 'PIDFile=/var/run/qbusmqttgw.pid' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
 	echo 'Restart=on-failure' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
 	echo 'RemainAfterExit=no' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
@@ -272,8 +275,15 @@ checkMosquitto(){
 		DISPLCOLOR=${GREEN}
 		echoInColor
   else
-    read -p "$(echo -e $YELLOW"     - We didn't found an installation of Mosquitto. We reccomend using Mosquitto as MQTT server. Do you want us to install Mosquitto? (y/n)? " $NC)" INSTMOS
-		if [[ $INSTMOS == "n" ]]; then
+    read -p "$(echo -e $YELLOW"     - We didn't found an installation of Mosquitto. We reccomend using Mosquitto as MQTT server. Do you want us to install Mosquitto (1), use your own MQTT server (2) or continue without a MQTT server (3)? " $NC)" INSTMOS
+	if [[ $INSTMOS == "1" ]]; then
+		INSTMOS = 'y'
+	fi
+	if [[ $INSTMOS == "2" ]]; then
+		read -p "$(echo -e $GREEN"         -Please enter the ip address of your MQTT server:  " $NC)" MQTTIP
+		read -p "$(echo -e $GREEN"         -Please enter the port of your MQTT server (1883):  " $NC)" MQTTPORT
+	fi
+	if [[ $INSTMOS == "3" ]]; then
    		DISPLTEXT='     - You choose to not install Mosquitto. The Qbus MQTT Gateway requires a MQTT server.'
 		  DISPLCOLOR=${RED}
 		  echoInColor
@@ -451,7 +461,7 @@ if [[ $OHINSTALL == "y" ]]; then
 	DISPLTEXT='* Install openHAB Stable (3.1.0)...'
 	echoInColor
 	installOpenhab3
-  copyJar
+	copyJar
 	sudo chown --recursive openhab:openhab /etc/openhab /var/lib/openhab /var/log/openhab /usr/share/openhab
 	sudo chmod --recursive ug+wX /opt /etc/openhab /var/lib/openhab /var/log/openhab /usr/share/openhab
 	echo ''
