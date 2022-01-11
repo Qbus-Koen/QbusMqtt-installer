@@ -58,28 +58,7 @@ installDependencies(){
 	kill -9 $SPIN_PID
 }
 
-createMqttService(){
-	spin &
-	SPIN_PID=$!
-	trap "kill -9 $SPIN_PID" `seq 0 15`
-	
-	echo '[Unit]' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
-	echo 'Description=MQTT client for Qbus communication' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
-	echo 'After=user.target networking.service' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
-	echo '' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
-	echo '[Service]' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
-	echo 'Type=simple' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
-	echo 'ExecStart= /usr/bin/qbus/qbusMqttGw/./qbusMqttGw -serial="QBUSMQTTGW" -logbuflevel -1 -log_dir /var/log/qbus -max_log_size=10 -storagedir /opt/qbus -mqttbroker "tcp://'$MQTTIP':'$MQTTPORT'" -mqttuser '$USER' -mqttpassword '$PASSWORD''| sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
-	echo 'PIDFile=/var/run/qbusmqttgw.pid' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
-	echo 'Restart=on-failure' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
-	echo 'RemainAfterExit=no' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
-	echo 'RestartSec=5s' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
-	echo '' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
-	echo '[Install]' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
-	echo 'WantedBy=multi-user.target' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
-	
-	kill -9 $SPIN_PID
-}
+
 
 
 
@@ -96,7 +75,20 @@ installQbusMqttGw(){
 	sudo cp -R qbusMqtt/qbusMqtt/qbusMqttGw-arm/fw/ /opt/qbus/ > /dev/null 2>&1
 	sudo cp qbusMqtt/qbusMqtt/qbusMqttGw-arm/puttftp /opt/qbus/ > /dev/null 2>&1
 	sudo cp qbusMqtt/qbusMqtt/qbusMqttGw-arm/qbusMqttGw /usr/bin/qbus/ > /dev/null 2>&1
-	createMqttService
+	echo '[Unit]' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
+	echo 'Description=MQTT client for Qbus communication' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
+	echo 'After=user.target networking.service' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
+	echo '' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
+	echo '[Service]' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
+	echo 'Type=simple' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
+	echo 'ExecStart= /usr/bin/qbus/qbusMqttGw/./qbusMqttGw -serial="QBUSMQTTGW" -logbuflevel -1 -log_dir /var/log/qbus -max_log_size=10 -storagedir /opt/qbus -mqttbroker "tcp://'$MQTTIP':'$MQTTPORT'" -mqttuser '$USER' -mqttpassword '$PASSWORD''| sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
+	echo 'PIDFile=/var/run/qbusmqttgw.pid' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
+	echo 'Restart=on-failure' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
+	echo 'RemainAfterExit=no' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
+	echo 'RestartSec=5s' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
+	echo '' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
+	echo '[Install]' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
+	echo 'WantedBy=multi-user.target' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
 	# Create directory for logging
 	LOG=$(cat /etc/logrotate.d/qbus 2>/dev/null)
 	if [[ $LOG != "" ]]; then
