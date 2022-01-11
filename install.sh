@@ -224,7 +224,7 @@ installSamba(){
 	SPIN_PID=$!
 	trap "kill -9 $SPIN_PID" `seq 0 15
 	
-	sudo apt-get --assume-yes install samba samba-common-bin` > /dev/null 2>&1
+	echo 'sudo apt-get --assume-yes install samba samba-common-bin` > /dev/null 2>&1
 	echo '# Windows Internet Name Serving Support Section:' | sudo tee -a /etc/samba/smb.conf > /dev/null 2>&1
 	echo '# WINS Support - Tells the NMBD component of Samba to enable its WINS Server' | sudo tee -a /etc/samba/smb.conf > /dev/null 2>&1
 	echo 'wins support = yes' | sudo tee -a /etc/samba/smb.conf > /dev/null 2>&1
