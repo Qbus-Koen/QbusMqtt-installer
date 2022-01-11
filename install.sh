@@ -256,7 +256,7 @@ installOpenhab3(){
 	trap "kill -9 $SPIN_PID" `seq 0 15`
 	
 	sudo apt-get install apt-transport-https > /dev/null 2>&1
-	wget -qO - 'https://bintray.com/user/downloadSubjectPublicKey?username=openhab' | sudo apt-key add - > /dev/null 2>&1
+	wget -qO - 'https://openhab.jfrog.io/artifactory/api/gpg/key/public' | sudo apt-key add - > /dev/null 2>&1
 	sudo rm /etc/apt/sources.list.d/openhab.list > /dev/null 2>&1
 	echo 'deb https://openhab.jfrog.io/artifactory/openhab-linuxpkg stable main' | sudo tee /etc/apt/sources.list.d/openhab.list > /dev/null 2>&1
 	sudo apt-get --assume-yes update && sudo apt-get --assume-yes install openhab > /dev/null 2>&1
@@ -447,7 +447,7 @@ if [[ $OH2UPDATE == "y" ]]; then
 	echoInColor
 	installOpenhab3
 	restoreOpenhabFiles
-  copyJar
+	copyJar
 	sudo chown --recursive openhab:openhab /etc/openhab /var/lib/openhab /var/log/openhab /usr/share/openhab
 	sudo chmod --recursive ug+wX /opt /etc/openhab /var/lib/openhab /var/log/openhab /usr/share/openhab
 	echo ''
