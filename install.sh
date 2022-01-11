@@ -172,7 +172,7 @@ copyJar(){
 	trap "kill -9 $SPIN_PID" `seq 0 15`
 	
 	sudo rm /usr/share/openhab/addons/org.openhab.binding.qbus* 
-	sudo cp qbusMtt/openHAB/org.openhab.binding.qbus-3.2.0-SNAPSHOT.jar /usr/share/openhab/addons/ 
+	sudo cp qbusMqtt/openHAB/org.openhab.binding.qbus-3.2.0-SNAPSHOT.jar /usr/share/openhab/addons/ 
 	sudo chown openhab:openhab  /usr/share/openhab/addons/org.openhab.binding.qbus-3.2.0-SNAPSHOT.jar
 	
 	kill -9 $SPIN_PID
