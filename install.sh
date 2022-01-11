@@ -143,8 +143,7 @@ checkOH(){
 	  fi
 	else
 		read -p "$(echo -e $YELLOW"     -We did not detected openHAB running on your system. Do you want to install openHAB? ' (y/n)? " $NC)" OHINSTALL
-		DISPLCOLOR=${GREEN}
-		echoInColor
+
 	fi
 }
 
@@ -276,9 +275,7 @@ checkMosquitto(){
 		echoInColor
   else
     read -p "$(echo -e $YELLOW"     - We didn't found an installation of Mosquitto. We reccomend using Mosquitto as MQTT server. Do you want us to install Mosquitto (1), use your own MQTT server (2) or continue without a MQTT server (3)? " $NC)" INSTMOS
-	if [[ $INSTMOS == "1" ]]; then
-		INSTMOS = 'y'
-	fi
+
 	if [[ $INSTMOS == "2" ]]; then
 		read -p "$(echo -e $GREEN"         -Please enter the ip address of your MQTT server:  " $NC)" MQTTIP
 		read -p "$(echo -e $GREEN"         -Please enter the port of your MQTT server (1883):  " $NC)" MQTTPORT
@@ -427,7 +424,7 @@ DISPLTEXT='* Installing dependencies.'
 echoInColor
 installDependencies
 
-if [[ $INSTMOS == 'y' ]]; then
+if [[ $INSTMOS == 1 ]]; then
   DISPLTEXT='* Installing Mosquitto.'
   echoInColor
   installMosquitto
