@@ -224,7 +224,7 @@ installSamba(){
 	SPIN_PID=$!
 	trap "kill -9 $SPIN_PID" `seq 0 15`
 	
-	echo 'sudo apt-get --assume-yes install samba samba-common-bin' > /dev/null 2>&1
+	sudo apt-get --assume-yes install samba samba-common-bin
 	echo '# Windows Internet Name Serving Support Section:' | sudo tee -a /etc/samba/smb.conf > /dev/null 2>&1
 	echo '# WINS Support - Tells the NMBD component of Samba to enable its WINS Server' | sudo tee -a /etc/samba/smb.conf > /dev/null 2>&1
 	echo 'wins support = yes' | sudo tee -a /etc/samba/smb.conf > /dev/null 2>&1
@@ -336,6 +336,12 @@ updateRpi(){
 	sudo apt-get  --assume-yes update > /dev/null 2>&1
 	
 	kill -9 $SPIN_PID
+}
+
+cleanup() {
+	sudo rm -r qbusMqtt
+	sudo rm -r QbusMqtt-Installer
+	sudo rm -r qbusMqttGw-arm
 }
 
 # ============================== Start installation ==============================
@@ -469,6 +475,7 @@ if [[ $INSTSAMBA == "y" ]]; then
 fi
 
 # Finishing installation
+cleanup
 DISPLTEXT='The installation is finished now. To make sure everything is set up correctly and to avoid problems, we suggest to do a reboot.'
 echoInColor
 
