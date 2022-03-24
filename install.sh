@@ -67,6 +67,8 @@ installQbusMqttGw(){
 	SPIN_PID=$!
 	trap "kill -9 $SPIN_PID" `seq 0 15`
 	
+	sudo rm /lib/systemd/system/qbusmqtt.service
+	
 	git clone https://github.com/QbusKoen/qbusMqtt > /dev/null 2>&1
 	tar -xf qbusMqtt/qbusMqttGw/qbusMqttGw-arm.tar > /dev/null 2>&1
 	
@@ -95,6 +97,9 @@ installQbusMqttGw(){
 	echo '' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
 	echo '[Install]' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
 	echo 'WantedBy=multi-user.target' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
+	
+	sudo systemctl daemon-reload > /dev/null 2>&1
+	sudo systemctl restart qbusmqtt.service > /dev/null 2>&1
  
 	kill -9 $SPIN_PID
 }
