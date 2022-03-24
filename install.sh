@@ -340,9 +340,8 @@ updateRpi(){
 }
 
 cleanup() {
+	sudo rm -r QbusMqtt-installer
 	sudo rm -r qbusMqtt
-	sudo rm -r QbusMqtt-Installer
-	sudo rm -r qbusMqttGw-arm
 }
 
 # ============================== Start installation ==============================
@@ -446,7 +445,6 @@ if [[ $OH2UPDATE == "y" ]]; then
 	echoInColor
 	installOpenhab3
 	restoreOpenhabFiles
-	copyJar
 	sudo chown --recursive openhab:openhab /etc/openhab /var/lib/openhab /var/log/openhab /usr/share/openhab
 	sudo chmod --recursive ug+wX /opt /etc/openhab /var/lib/openhab /var/log/openhab /usr/share/openhab
 	echo ''
@@ -457,12 +455,14 @@ if [[ $OHINSTALL == "y" ]]; then
 	DISPLTEXT='* Install openHAB Stable (3.2.0)...'
 	echoInColor
 	installOpenhab3
-	copyJar
 	sudo chown --recursive openhab:openhab /etc/openhab /var/lib/openhab /var/log/openhab /usr/share/openhab
 	sudo chmod --recursive ug+wX /opt /etc/openhab /var/lib/openhab /var/log/openhab /usr/share/openhab
 	echo ''
 fi
 
+DISPLTEXT='* Copy JAR file.'
+echoInColor
+copyJar
 
 # Install SMB
 if [[ $INSTSAMBA == "y" ]]; then
