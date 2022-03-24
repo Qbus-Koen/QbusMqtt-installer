@@ -68,20 +68,26 @@ installQbusMqttGw(){
 	trap "kill -9 $SPIN_PID" `seq 0 15`
 	
 	git clone https://github.com/QbusKoen/qbusMqtt > /dev/null 2>&1
-	tar -xf qbusMqtt/qbusMqtt/qbusMqttGw-arm.tar > /dev/null 2>&1
+	tar -xf qbusMqtt/qbusMqttGw/qbusMqttGw-arm.tar > /dev/null 2>&1
+	
 	sudo mkdir /usr/bin/qbus > /dev/null 2>&1
 	sudo mkdir /opt/qbus > /dev/null 2>&1
 	sudo mkdir /var/log/qbus > /dev/null 2>&1
-	sudo cp -R qbusMqtt/qbusMqtt/qbusMqttGw-arm/fw/ /opt/qbus/ > /dev/null 2>&1
-	sudo cp qbusMqtt/qbusMqtt/qbusMqttGw-arm/puttftp /opt/qbus/ > /dev/null 2>&1
-	sudo cp qbusMqtt/qbusMqtt/qbusMqttGw-arm/qbusMqttGw /usr/bin/qbus/ > /dev/null 2>&1
+	
+	sudo cp -R qbusMqtt/qbusMqtt/fw/ /opt/qbus/ > /dev/null 2>&1
+	sudo cp qbusMqtt/qbusMqtt/puttftp /opt/qbus/ > /dev/null 2>&1
+	sudo cp qbusMqtt/qbusMqtt/qbusMqttGw/qbusMqttGw-arm/qbusMqttGw /usr/bin/qbus/ > /dev/null 2>&1
+	
+	sudo chmod +x /usr/bin/qbus/qbusMqttGw
+	sudo chmod +x /opt/qbus/puttftp
+	
 	echo '[Unit]' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
 	echo 'Description=MQTT client for Qbus communication' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
 	echo 'After=user.target networking.service' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
 	echo '' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
 	echo '[Service]' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
 	echo 'Type=simple' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
-	echo 'ExecStart= /usr/bin/qbus/qbusMqttGw/./qbusMqttGw -serial="QBUSMQTTGW" -logbuflevel -1 -log_dir /var/log/qbus -max_log_size=10 -storagedir /opt/qbus -mqttbroker "tcp://'$MQTTIP':'$MQTTPORT'" -mqttuser '$USER' -mqttpassword '$PASSWORD''| sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
+	echo 'ExecStart= /usr/bin/qbus/./qbusMqttGw -serial="QBUSMQTTGW" -logbuflevel -1 -log_dir /var/log/qbus -max_log_size=10 -storagedir /opt/qbus -mqttbroker "tcp://'$MQTTIP':'$MQTTPORT'" -mqttuser '$USER' -mqttpassword '$PASSWORD''| sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
 	echo 'PIDFile=/var/run/qbusmqttgw.pid' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
 	echo 'Restart=on-failure' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
 	echo 'RemainAfterExit=no' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
@@ -89,18 +95,6 @@ installQbusMqttGw(){
 	echo '' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
 	echo '[Install]' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
 	echo 'WantedBy=multi-user.target' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
-	# Create directory for logging
-	LOG=$(cat /etc/logrotate.d/qbus 2>/dev/null)
-	if [[ $LOG != "" ]]; then
-		sudo mkdir /var/log/qbus/ > /dev/null 2>&1
-		sudo touch /etc/logrotate.d/qbus > /dev/null 2>&1
-		echo '/var/log/qbus/*.log {' | sudo tee -a /etc/logrotate.d/qbus > /dev/null 2>&1
-		echo '        daily' | sudo tee -a /etc/logrotate.d/qbus > /dev/null 2>&1
-		echo '        rotate 7' | sudo tee -a /etc/logrotate.d/qbus > /dev/null 2>&1
-		echo '        size 10M' | sudo tee -a /etc/logrotate.d/qbus > /dev/null 2>&1
-		echo '        compress' | sudo tee -a /etc/logrotate.d/qbus > /dev/null 2>&1
-		echo '        delaycompress' | sudo tee -a /etc/logrotate.d/qbus > /dev/null 2>&1
-	fi
  
 	kill -9 $SPIN_PID
 }
@@ -121,15 +115,21 @@ checkOH(){
 	  # OH3 found, checking release
 	  OH3V=$(cat /etc/apt/sources.list.d/openhab.list)
 	  if [[ $OH3V =~ "unstable" ]]; then
-  		DISPLTEXT='     -We have detected openHAB running the snapshot (3.2.0-SNAPSHOT) version. The Qbus Binding is included in this version, but does not work with MQTT. We will copy a JAR file to your current installation. After the installation process, you will need to remove the released Binding if installed. Keep in mind that this binding also works with the stable version.'
+  		DISPLTEXT='     -We have detected openHAB running the snapshot (3.3.0-SNAPSHOT) version. The Qbus Binding is included in this version, but does not work with MQTT. We will copy a JAR file to your current installation. After the installation process, you will need to remove the released Binding if installed. Keep in mind that this binding also works with the stable version.'
   		DISPLCOLOR=${GREEN}
+  		echoInColor
+		DISPLTEXT='     -This release of the Qbus Binding was developed for the 3.2.0 release. We could not test this binding for your current setup'
+  		DISPLCOLOR=${RED}
   		echoInColor
 	  elif [[ $OH3V =~ "testing" ]]; then
-  		DISPLTEXT='     -We have detected openHAB running the milestone (3.2.0Mx) version. The Qbus Binding is included in this version, but does not work with MQTT. We will copy a JAR file to your current installation. After the installation process, you will need to remove the released Binding if installed. Keep in mind that this binding also works with the stable version.'
+  		DISPLTEXT='     -We have detected openHAB running the milestone (3.3.0Mx) version. The Qbus Binding is included in this version, but does not work with MQTT. We will copy a JAR file to your current installation. After the installation process, you will need to remove the released Binding if installed. Keep in mind that this binding also works with the stable version.'
   		DISPLCOLOR=${GREEN}
   		echoInColor
+		DISPLTEXT='     -This release of the Qbus Binding was developed for the 3.2.0 release. We could not test this binding for your current setup'
+  		DISPLCOLOR=${RED}
+  		echoInColor
 	  elif [[ $OH3V =~ "stable" ]]; then
-  		DISPLTEXT='     -We have detected openHAB running the stable (3.1.0) version. The Qbus Binding is included in this version, but does not work with MQTT. We will copy a JAR file to your current installation. After the installation process, you will need to remove the released Binding if installed.'
+  		DISPLTEXT='     -We have detected openHAB running the stable (3.2.0) version. The Qbus Binding is included in this version, but does not work with MQTT. We will copy a JAR file to your current installation. After the installation process, you will need to remove the released Binding if installed.'
   		DISPLCOLOR=${GREEN}
   		echoInColor
 	  fi
@@ -367,7 +367,7 @@ echoInColor
 DISPLTEXT=""
 echoInColor
 DISPLCOLOR=${NC}
-DISPLTEXT="Release date 30/11/2021 by ks@qbus.be"
+DISPLTEXT="Release date 24/03/2022 by ks@qbus.be"
 echoInColor
 echo ''
 DISPLTEXT="Welcome to the Qbus2openHAB (MQTT version) installer."
@@ -435,10 +435,10 @@ installQbusMqttGw
 
 # Install openHAB
 if [[ $OH2UPDATE == "y" ]]; then
-  # Upgrade from openHAB2 to openHAB stable (3.1.0)
-  DISPLTEXT='* Making backup of openHAB2...'
+	# Upgrade from openHAB2 to openHAB stable (3.1.0)
+	DISPLTEXT='* Making backup of openHAB2...'
 	echoInColor
-  backupOpenhabFiles
+	backupOpenhabFiles
 	DISPLTEXT='* Purging openHAB...'
 	echoInColor
 	removeOpenHAB2
@@ -453,8 +453,8 @@ if [[ $OH2UPDATE == "y" ]]; then
 fi
 
 if [[ $OHINSTALL == "y" ]]; then
-  # Install openHAB stable (3.1.0)
-	DISPLTEXT='* Install openHAB Stable (3.1.0)...'
+	# Install openHAB stable (3.2.0)
+	DISPLTEXT='* Install openHAB Stable (3.2.0)...'
 	echoInColor
 	installOpenhab3
 	copyJar
