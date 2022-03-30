@@ -13,6 +13,9 @@ OH3=''
 OH3V=''
 DISPLTEXT=''
 DISPLCOLOR=''
+BITS=''
+VENDOR=''
+GW2USE=''
 
 # ============================== Define colors ==============================
 DISPLTEXT=''
@@ -59,7 +62,23 @@ installDependencies(){
 }
 
 
-
+checkPocessor() {
+	BITS=$(getconf LONG_BIT)
+	VENDOR=$(lscpu | grep 'Vendor')
+	
+	if [[ "$VENDOR" == *"ARM"* ]]; then
+	  # ARM detected
+	  GW2USE='qbusMqttGw-arm'
+	else
+	  if [[ "$BITS" == 64 ]]; then
+		# 64 BITS
+		GW2USE='qbusMqttGw-x64'
+	  elif [[ "$BITS" == 32 ]]; then
+		# 32 BITS
+		GW2USE='qbusMqttGw-x86'
+	  fi
+	fi
+}
 
 
 installQbusMqttGw(){
@@ -67,18 +86,20 @@ installQbusMqttGw(){
 	SPIN_PID=$!
 	trap "kill -9 $SPIN_PID" `seq 0 15`
 	
+	checkPocessor
+	
 	sudo rm /lib/systemd/system/qbusmqtt.service
 	
 	git clone https://github.com/QbusKoen/qbusMqtt > /dev/null 2>&1
-	tar -xf qbusMqtt/qbusMqttGw/qbusMqttGw-arm.tar > /dev/null 2>&1
+	tar -xf qbusMqtt/qbusMqttGw/$GW2USE.tar > /dev/null 2>&1
 	
 	sudo mkdir /usr/bin/qbus > /dev/null 2>&1
 	sudo mkdir /opt/qbus > /dev/null 2>&1
-	sudo mkdir /var/log/qbus > /dev/null 2>&1
+	sudo rm -r /var/log/qbus > /dev/null 2>&1
 	
 	sudo cp -R qbusMqtt/qbusMqtt/fw/ /opt/qbus/ > /dev/null 2>&1
 	sudo cp qbusMqtt/qbusMqtt/puttftp /opt/qbus/ > /dev/null 2>&1
-	sudo cp qbusMqtt/qbusMqtt/qbusMqttGw/qbusMqttGw-arm/qbusMqttGw /usr/bin/qbus/ > /dev/null 2>&1
+	sudo cp qbusMqtt/qbusMqtt/qbusMqttGw/$GW2USE/qbusMqttGw /usr/bin/qbus/ > /dev/null 2>&1
 	
 	sudo chmod +x /usr/bin/qbus/qbusMqttGw
 	sudo chmod +x /opt/qbus/puttftp
@@ -89,7 +110,7 @@ installQbusMqttGw(){
 	echo '' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
 	echo '[Service]' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
 	echo 'Type=simple' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
-	echo 'ExecStart= /usr/bin/qbus/./qbusMqttGw -serial="QBUSMQTTGW" -logbuflevel -1 -log_dir /var/log/qbus -max_log_size=10 -storagedir /opt/qbus -mqttbroker "tcp://'$MQTTIP':'$MQTTPORT'" -mqttuser '$USER' -mqttpassword '$PASSWORD''| sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
+	echo 'ExecStart= /usr/bin/qbus/./qbusMqttGw -serial="QBUSMQTTGW" -logbuflevel -1 -logtostderr true -storagedir /opt/qbus -mqttbroker "tcp://'$MQTTIP':'$MQTTPORT'" -mqttuser '$USER' -mqttpassword '$PASSWORD''| sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
 	echo 'PIDFile=/var/run/qbusmqttgw.pid' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
 	echo 'Restart=on-failure' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
 	echo 'RemainAfterExit=no' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
@@ -168,9 +189,13 @@ copyJar(){
 	SPIN_PID=$!
 	trap "kill -9 $SPIN_PID" `seq 0 15`
 	
-	sudo rm /usr/share/openhab/addons/org.openhab.binding.qbus* 
-	sudo cp qbusMqtt/openHAB/org.openhab.binding.qbus-3.2.0-SNAPSHOT.jar /usr/share/openhab/addons/ 
-	sudo chown openhab:openhab  /usr/share/openhab/addons/org.openhab.binding.qbus-3.2.0-SNAPSHOT.jar
+	sudo rm /usr/share/openhab/addons/org.openhab.binding.qbus* > /dev/null 2>&1
+	sudo cp qbusMqtt/openHAB/org.openhab.binding.qbus-3.2.0-SNAPSHOT.jar /usr/share/openhab/addons/ > /dev/null 2>&1
+	sudo chown openhab:openhab  /usr/share/openhab/addons/org.openhab.binding.qbus-3.2.0-SNAPSHOT.jar > /dev/null 2>&1
+	
+	sudo systemctl stop openhab.service > /dev/null 2>&1
+	sudo openhab-cli clean-cache > /dev/null 2>&1
+	sudo systemctl start openhab.service > /dev/null 2>&1
 	
 	kill -9 $SPIN_PID
 }
