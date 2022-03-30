@@ -16,6 +16,7 @@ DISPLCOLOR=''
 BITS=''
 VENDOR=''
 GW2USE=''
+PROC=''
 
 # ============================== Define colors ==============================
 DISPLTEXT=''
@@ -67,16 +68,31 @@ checkPocessor() {
 	VENDOR=$(lscpu | grep 'Vendor')
 	
 	if [[ "$VENDOR" == *"ARM"* ]]; then
-	  # ARM detected
-	  GW2USE='qbusMqttGw-arm'
-	else
-	  if [[ "$BITS" == 64 ]]; then
+		# ARM detected
+		GW2USE='qbusMqttGw-arm'
+	elif [[ "$BITS" == 64 ]]; then
 		# 64 BITS
 		GW2USE='qbusMqttGw-x64'
-	  elif [[ "$BITS" == 32 ]]; then
+	elif [[ "$BITS" == 32 ]]; then
 		# 32 BITS
 		GW2USE='qbusMqttGw-x86'
-	  fi
+	else
+		DISPLTEXT='We could not detect the processor type...'
+		DISPLCOLOR=${RED}
+		echoInColor
+		read -p "$(echo -e $YELLOW"-Please enter your processor type ( ARM - for raspberry, 64 - for 64 bit, 32 - for 32 bit: "$NC)" PROC
+		if [[ "$PROC" == *"ARM"* ]]; then
+			GW2USE='qbusMqttGw-arm'
+		elif [[ "$PROC" == 64 ]]; then
+			GW2USE='qbusMqttGw-x64'
+		elif [[ "$PROC" == 32 ]]; then
+			GW2USE='qbusMqttGw-x86'
+		else
+			DISPLTEXT='Unknown processor type, aborting installation'
+			DISPLCOLOR=${RED}
+			echoInColor
+			exit 0
+		fi
 	fi
 }
 
@@ -196,10 +212,18 @@ copyJar(){
 	sudo chown openhab:openhab  /usr/share/openhab/addons/org.openhab.binding.qbus-3.2.0-SNAPSHOT.jar > /dev/null 2>&1
 	
 	sudo systemctl stop openhab.service > /dev/null 2>&1
-	sudo openhab-cli clean-cache > /dev/null 2>&1
-	sudo systemctl start openhab.service > /dev/null 2>&1
 	
 	kill -9 $SPIN_PID
+	
+	DISPLCOLOR=${ORANGE}
+	DISPLTEXT="Please enter \"y\" en press enter to continue."
+	echoInColor
+	sudo openhab-cli clean-cache
+	
+	
+	sudo systemctl start openhab.service > /dev/null 2>&1
+	
+	
 }
 
 checkSamba(){
@@ -398,7 +422,7 @@ echoInColor
 DISPLTEXT=""
 echoInColor
 DISPLCOLOR=${NC}
-DISPLTEXT="Release date 24/03/2022 by ks@qbus.be"
+DISPLTEXT="Release date 30/03/2022 by ks@qbus.be"
 echoInColor
 echo ''
 DISPLTEXT="Welcome to the Qbus2openHAB (MQTT version) installer."
@@ -523,5 +547,8 @@ if [[ $REBOOT == "y" ]]; then
 else
 	DISPLTEXT='You choose to not reboot your system. If you run into problems, first trys to reboot!'
 	echoInColor
+	DISPLTEXT='We did a Clean Cache for openHAB. Please be patient and give openHAB some time to enable the bindings.'
+	echoInColor
+	exit 0
 fi
 
