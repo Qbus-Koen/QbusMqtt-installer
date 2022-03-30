@@ -86,12 +86,14 @@ installQbusMqttGw(){
 	SPIN_PID=$!
 	trap "kill -9 $SPIN_PID" `seq 0 15`
 	
+	sudo systemctl stop qbusmqtt > /dev/null 2>&1
+	
 	checkPocessor
 	
 	sudo rm /lib/systemd/system/qbusmqtt.service
 	
 	git clone https://github.com/QbusKoen/qbusMqtt > /dev/null 2>&1
-	tar -xf qbusMqtt/qbusMqttGw/$GW2USE.tar > /dev/null 2>&1
+	tar -xf qbusMqtt/qbusMqtt/qbusMqttGw/$GW2USE.tar  -C qbusMqtt/qbusMqtt/qbusMqttGw/ > /dev/null 2>&1
 	
 	sudo mkdir /usr/bin/qbus > /dev/null 2>&1
 	sudo mkdir /opt/qbus > /dev/null 2>&1
@@ -99,7 +101,7 @@ installQbusMqttGw(){
 	
 	sudo cp -R qbusMqtt/qbusMqtt/fw/ /opt/qbus/ > /dev/null 2>&1
 	sudo cp qbusMqtt/qbusMqtt/puttftp /opt/qbus/ > /dev/null 2>&1
-	sudo cp qbusMqtt/qbusMqtt/qbusMqttGw/$GW2USE/qbusMqttGw /usr/bin/qbus/ > /dev/null 2>&1
+	sudo cp qbusMqtt/qbusMqtt/qbusMqttGw/qbusMqttGw /usr/bin/qbus/ > /dev/null 2>&1
 	
 	sudo chmod +x /usr/bin/qbus/qbusMqttGw
 	sudo chmod +x /opt/qbus/puttftp
@@ -490,7 +492,7 @@ if [[ $OHINSTALL == "y" ]]; then
 	echo ''
 fi
 
-DISPLTEXT='* Copy JAR file.'
+DISPLTEXT='* Copy JAR file and restarting openHAB.'
 echoInColor
 copyJar
 
