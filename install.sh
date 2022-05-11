@@ -106,7 +106,7 @@ installQbusMqttGw(){
 	
 	checkPocessor
 	
-	sudo rm /lib/systemd/system/qbusmqtt.service
+	sudo rm /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
 	
 	git clone https://github.com/QbusKoen/qbusMqtt > /dev/null 2>&1
 	tar -xf qbusMqtt/qbusMqtt/qbusMqttGw/$GW2USE.tar  -C qbusMqtt/qbusMqtt/qbusMqttGw/ > /dev/null 2>&1
@@ -138,7 +138,9 @@ installQbusMqttGw(){
 	echo 'WantedBy=multi-user.target' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
 	
 	sudo systemctl daemon-reload > /dev/null 2>&1
+	sudo systemctl enable qbusmqtt.service > /dev/null 2>&1
 	sudo systemctl restart qbusmqtt.service > /dev/null 2>&1
+
  
 	kill -9 $SPIN_PID
 }
