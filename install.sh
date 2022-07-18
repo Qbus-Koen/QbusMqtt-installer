@@ -70,6 +70,26 @@ checkPocessor() {
 	if [[ "$VENDOR" == *"ARM"* ]]; then
 		# ARM detected
 		GW2USE='qbusMqttGw-arm'
+		if [[ "$BITS" == 64 ]]; then
+			# 64 BITS ARM
+			DISPLTEXT='We detected a 64 bit ARM processor. We do noet support this kind of processor.'
+			DISPLCOLOR=${RED}
+			echoInColor
+			DISPLTEXT='It is possible to install libraries that makes it possible to run our 32 bit version on your 64 bit system,'
+			DISPLCOLOR=${RED}
+			echoInColor
+			read -p "$(echo -e $RED"but we do not recommend this. Do you want to continue (on your own risk)? (y/n) "$NC)" CONTLIB
+			if [[ "$CONTLIB" == *"y"* ]]; then
+				sudo apt-get install libc6:armhf libdbus-1-3:armhf libstdc++6:armhf
+				sudo ln -s /lib/./arm-linux-gnueabihf/ld-2.31.so /lib/ld-linux.so.3
+				sudo ln -s /lib/./arm-linux-gnueabihf/libdbus-1.so.3 /lib/libdbus-1.so.3
+				sudo ln -s /lib/./arm-linux-gnueabihf/libstdc++.so.6 /lib/libstdc++.so.6
+			else
+				DISPLTEXT='Aborting installation, we do not have a client that supports your kind of processor.'
+				DISPLCOLOR=${RED}
+				echoInColor
+				exit 0
+			fi
 	elif [[ "$BITS" == 64 ]]; then
 		# 64 BITS
 		GW2USE='qbusMqttGw-x64'
@@ -431,9 +451,6 @@ DISPLTEXT="Welcome to the Qbus2openHAB (MQTT version) installer."
 echoInColor
 echo ""
 
-
-
-
 checkOH
 checkMosquitto
 checkSamba
@@ -492,7 +509,6 @@ installQbusMqttGw
 
 # Install openHAB
 if [[ $OH2UPDATE == "y" ]]; then
-	# Upgrade from openHAB2 to openHAB stable (3.1.0)
 	DISPLTEXT='* Making backup of openHAB2...'
 	echoInColor
 	backupOpenhabFiles
