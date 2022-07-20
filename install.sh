@@ -80,16 +80,17 @@ checkPocessor() {
 			echoInColor
 			read -p "$(echo -e $RED"but we do not recommend this. Do you want to continue (on your own risk)? (y/n) "$NC)" CONTLIB
 			if [[ "$CONTLIB" == *"y"* ]]; then
-				sudo apt-get install libc6:armhf libdbus-1-3:armhf libstdc++6:armhf
-				sudo ln -s /lib/./arm-linux-gnueabihf/ld-2.31.so /lib/ld-linux.so.3
-				sudo ln -s /lib/./arm-linux-gnueabihf/libdbus-1.so.3 /lib/libdbus-1.so.3
-				sudo ln -s /lib/./arm-linux-gnueabihf/libstdc++.so.6 /lib/libstdc++.so.6
+				sudo apt-get install libc6:armhf libdbus-1-3:armhf libstdc++6:armhf > /dev/null 2>&1
+				sudo ln -s /lib/./arm-linux-gnueabihf/ld-2.31.so /lib/ld-linux.so.3 > /dev/null 2>&1
+				sudo ln -s /lib/./arm-linux-gnueabihf/libdbus-1.so.3 /lib/libdbus-1.so.3 > /dev/null 2>&1
+				sudo ln -s /lib/./arm-linux-gnueabihf/libstdc++.so.6 /lib/libstdc++.so.6 > /dev/null 2>&1
 			else
 				DISPLTEXT='Aborting installation, we do not have a client that supports your kind of processor.'
 				DISPLCOLOR=${RED}
 				echoInColor
 				exit 0
 			fi
+		fi
 	elif [[ "$BITS" == 64 ]]; then
 		# 64 BITS
 		GW2USE='qbusMqttGw-x64'
@@ -206,21 +207,21 @@ checkOH(){
 }
 
 backupOpenhabFiles(){
-	if [[$OH="OH2"]]; then
-			sudo cp -R /etc/openhab2 /tmp/ > /dev/null 2>&1
+	if [[ $OH="OH2" ]]; then
+		sudo cp -R /etc/openhab2 /tmp/ > /dev/null 2>&1
 	else
-			sudo cp -R /etc/openhab /tmp/ > /dev/null 2>&1
+		sudo cp -R /etc/openhab /tmp/ > /dev/null 2>&1
 	fi
 }
 
 restoreOpenhabFiles(){
-	if [[$OH="OH2"]]; then
-			sudo rm /etc/openhab2
-			sudo mv /tmp/openhab2 /tmp/openhab
-			sudo cp -R /tmp/openhab2 /etc/
+	if [[ $OH="OH2" ]]; then
+		sudo rm /etc/openhab2
+		sudo mv /tmp/openhab2 /tmp/openhab
+		sudo cp -R /tmp/openhab2 /etc/
 	else
-			sudo rm /etc/openhab
-			sudo cp -R /tmp/openhab /etc/
+		sudo rm /etc/openhab
+		sudo cp -R /tmp/openhab /etc/
 	fi
 }
 
@@ -242,10 +243,7 @@ copyJar(){
 	echoInColor
 	sudo openhab-cli clean-cache
 	
-	
 	sudo systemctl start openhab.service > /dev/null 2>&1
-	
-	
 }
 
 checkSamba(){
