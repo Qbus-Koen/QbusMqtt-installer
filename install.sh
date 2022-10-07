@@ -17,6 +17,8 @@ BITS=''
 VENDOR=''
 GW2USE=''
 PROC=''
+NR=''
+INSTNR=''
 
 # ============================== Define colors ==============================
 DISPLTEXT=''
@@ -170,40 +172,56 @@ checkOH(){
   DISPLTEXT='-- Checking openHAB...'
   DISPLCOLOR=${YELLOW}
   echoInColor
-	OH2=$(ls /usr/share/openhab2 2>/dev/null)
-	OH3=$(ls /usr/share/openhab 2>/dev/null)
+  OH2=$(ls /usr/share/openhab2 2>/dev/null)
+  OH3=$(ls /usr/share/openhab 2>/dev/null)
 
-	if [[ $OH2 != "" ]]; then
-	  # OH2 found
-	  OH="OH2"
+  if [[ $OH2 != "" ]]; then
+    # OH2 found
+    OH="OH2"
     read -p "$(echo -e $YELLOW"     -We have detected openHAB2 running on your device. The Qbus Binding is developped for the newest version of openHAB (3). Do you agree that we remove openHAB2 and install openHAB3? (y/n)? " $NC)" OH2UPDATE
 
-	elif [[ $OH3 != "" ]]; then
-	  # OH3 found, checking release
-	  OH3V=$(cat /etc/apt/sources.list.d/openhab.list)
-	  if [[ $OH3V =~ "unstable" ]]; then
-  		DISPLTEXT='     -We have detected openHAB running the snapshot (3.3.0-SNAPSHOT) version. The Qbus Binding is included in this version, but does not work with MQTT. We will copy a JAR file to your current installation. After the installation process, you will need to remove the released Binding if installed. Keep in mind that this binding also works with the stable version.'
-  		DISPLCOLOR=${GREEN}
-  		echoInColor
-		DISPLTEXT='     -This release of the Qbus Binding was developed for the 3.2.0 release. We could not test this binding for your current setup'
-  		DISPLCOLOR=${RED}
-  		echoInColor
-	  elif [[ $OH3V =~ "testing" ]]; then
-  		DISPLTEXT='     -We have detected openHAB running the milestone (3.3.0Mx) version. The Qbus Binding is included in this version, but does not work with MQTT. We will copy a JAR file to your current installation. After the installation process, you will need to remove the released Binding if installed. Keep in mind that this binding also works with the stable version.'
-  		DISPLCOLOR=${GREEN}
-  		echoInColor
-		DISPLTEXT='     -This release of the Qbus Binding was developed for the 3.2.0 release. We could not test this binding for your current setup'
-  		DISPLCOLOR=${RED}
-  		echoInColor
-	  elif [[ $OH3V =~ "stable" ]]; then
-  		DISPLTEXT='     -We have detected openHAB running the stable (3.2.0) version. The Qbus Binding is included in this version, but does not work with MQTT. We will copy a JAR file to your current installation. After the installation process, you will need to remove the released Binding if installed.'
-  		DISPLCOLOR=${GREEN}
-  		echoInColor
-	  fi
-	else
-		read -p "$(echo -e $YELLOW"     -We did not detected openHAB running on your system. Do you want to install openHAB? ' (y/n)? " $NC)" OHINSTALL
+    elif [[ $OH3 != "" ]]; then
+      # OH3 found, checking release
+      OH3V=$(cat /etc/apt/sources.list.d/openhab.list)
+      if [[ $OH3V =~ "unstable" ]]; then
+        DISPLTEXT='     -We have detected openHAB running the snapshot (3.3.0-SNAPSHOT) version. The Qbus Binding is included in this version, but does not work with MQTT. We will copy a JAR file to your current installation. After the installation process, you will need to remove the released Binding if installed. Keep in mind that this binding also works with the stable version.'
+        DISPLCOLOR=${GREEN}
+        echoInColor
+        DISPLTEXT='     -This release of the Qbus Binding was developed for the 3.2.0 release. We could not test this binding for your current setup'
+        DISPLCOLOR=${RED}
+        echoInColor
+      elif [[ $OH3V =~ "testing" ]]; then
+        DISPLTEXT='     -We have detected openHAB running the milestone (3.3.0Mx) version. The Qbus Binding is included in this version, but does not work with MQTT. We will copy a JAR file to your current installation. After the installation process, you will need to remove the released Binding if installed. Keep in mind that this binding also works with the stable version.'
+        DISPLCOLOR=${GREEN}
+        echoInColor
+        DISPLTEXT='     -This release of the Qbus Binding was developed for the 3.2.0 release. We could not test this binding for your current setup'
+        DISPLCOLOR=${RED}
+        echoInColor
+      elif [[ $OH3V =~ "stable" ]]; then
+        DISPLTEXT='     -We have detected openHAB running the stable (3.2.0) version. The Qbus Binding is included in this version, but does not work with MQTT. We will copy a JAR file to your current installation. After the installation process, you will need to remove the released Binding if installed.'
+        DISPLCOLOR=${GREEN}
+        echoInColor
+      fi
+    else
+    read -p "$(echo -e $YELLOW"     -We did not detected openHAB running on your system. Do you want to install openHAB? ' (y/n)? " $NC)" OHINSTALL
 
-	fi
+    fi
+}
+
+checkNodeRed() {
+  DISPLTEXT='-- Checking node-RED...'
+  DISPLCOLOR=${YELLOW}
+  echoInColor
+  
+  NR=$(npm list -g node-red)
+
+  if [[ "$NR" == *"node-red"* ]]; then
+    DISPLTEXT='     ->node-RED is installed!'
+    DISPLCOLOR=${GREEN}
+    echoInColor
+  else
+    read -p "$(echo -e $YELLOW"     -We did not found an installation of node-red. Do you want to install node-red? (y/n)")" INSTNR
+  fi
 }
 
 backupOpenhabFiles(){
@@ -246,6 +264,16 @@ copyJar(){
 	sudo systemctl start openhab.service > /dev/null 2>&1
 }
 
+copyNodeRedQbus() {
+  spin &
+  SPIN_PID=$!
+  trap "kill -9 $SPIN_PID" `seq 0 15`
+
+  cp -r qbusMqtt/node-red-contrib-qbus/ ~/.node-red/node_modules/
+
+  kill -9 $SPIN_PID
+}
+
 checkSamba(){
   DISPLTEXT='-- Checking SMB...'
   DISPLCOLOR=${YELLOW}
@@ -267,28 +295,28 @@ checkSamba(){
     fi
 
     SMBUSER=$(sudo pdbedit -L 2>/dev/null)
-	
+
     if [[ $SMBUSER =~ "openhab" ]]; then
       DISPLTEXT='     -openHAB user is already configured for Samba Share'
-	    DISPLCOLOR=${GREEN}
-	    echoInColor
+      DISPLCOLOR=${GREEN}
+      echoInColor
     else
       DISPLTEXT='     -openHAB user is not configured for Samba Share.'
-	    DISPLCOLOR=${RED}
-	    echoInColor
-	  
+      DISPLCOLOR=${RED}
+      echoInColor
+  
       DISPLTEXT='     -Enter a password for the Samba Share for the user openhab & repeat it: '
-	    DISPLCOLOR=${YELLOW}
-	    echoInColor
-	  
-	    echo -e -n "$NC"
+      DISPLCOLOR=${YELLOW}
+      echoInColor
+
+      echo -e -n "$NC"
       sudo smbpasswd -a openhab
     fi
   else
-  	read -p "$(echo -e $YELLOW"     -We did not detect Samba Share on your system. You don not really need SMB, but it makes it easier to configure certain openHAB things. Do you agree to install Samba share (y/n)? " $NC)" INSTSAMBA
+  	read -p "$(echo -e $YELLOW"     -We did not detect Samba Share on your system. You don not really need SMB, but it makes it easier to configure openHAB things. Do you agree to install Samba share (y/n)? " $NC)" INSTSAMBA
           
   	if [[ $INSTSAMBA == "n" ]]; then
-  		DISPLTEXT='     -You choose not to install Samba Share. This means you have to configure certain openHAB things on this device.'
+  		DISPLTEXT='     -You choose not to install Samba Share. This means you have to configure openHAB things on this device.'
   		DISPLCOLOR=${RED}
   		echoInColor
   	fi
@@ -319,18 +347,52 @@ installSamba(){
 }
 
 installOpenhab3(){
-	spin &
-	SPIN_PID=$!
-	trap "kill -9 $SPIN_PID" `seq 0 15`
-	
-	sudo apt-get --assume-yes install apt-transport-https > /dev/null 2>&1
-	sudo apt-get --assume-yes install openjdk-11-jdk-headless > /dev/null 2>&1
-	wget -qO - 'https://openhab.jfrog.io/artifactory/api/gpg/key/public' | sudo apt-key add - > /dev/null 2>&1
-	sudo rm /etc/apt/sources.list.d/openhab.list > /dev/null 2>&1
-	echo 'deb https://openhab.jfrog.io/artifactory/openhab-linuxpkg stable main' | sudo tee /etc/apt/sources.list.d/openhab.list > /dev/null 2>&1
-	sudo apt-get --assume-yes update && sudo apt-get --assume-yes install openhab > /dev/null 2>&1
-	
-	kill -9 $SPIN_PID
+  spin &
+  SPIN_PID=$!
+  trap "kill -9 $SPIN_PID" `seq 0 15`
+
+  sudo apt-get --assume-yes install apt-transport-https > /dev/null 2>&1
+  sudo apt-get --assume-yes install openjdk-11-jdk-headless > /dev/null 2>&1
+  wget -qO - 'https://openhab.jfrog.io/artifactory/api/gpg/key/public' | sudo apt-key add - > /dev/null 2>&1
+  sudo rm /etc/apt/sources.list.d/openhab.list > /dev/null 2>&1
+  echo 'deb https://openhab.jfrog.io/artifactory/openhab-linuxpkg stable main' | sudo tee /etc/apt/sources.list.d/openhab.list > /dev/null 2>&1
+  sudo apt-get --assume-yes update && sudo apt-get --assume-yes install openhab > /dev/null 2>&1
+
+  kill -9 $SPIN_PID
+}
+
+installNodeRed() {
+  if [[ "$VENDOR" == *"ARM"* ]]; then
+    echo "ARM system detected"
+    echo "Installing node-RED with dependencies"
+
+    spin &
+    SPIN_PID=$!
+    trap "kill -9 $SPIN_PID" `seq 0 15`
+  
+    sudo apt install build-essential git curl > /dev/null 2>&1
+    bash <(curl -sL https://raw.githubusercontent.com/node-red/linux-installers/master/deb/update-nodejs-and-nodered)
+    sudo systemctl enable nodered.service > /dev/null 2>&1
+    
+    kill -9 $SPIN_PID
+  else
+    OS=$(lsb_release -a)
+    if [[ "$OS" == *"ebian"* ]]; then
+      echo "Debian system detected"
+      echo "Installing node-RED with dependencies"
+
+      spin &
+      SPIN_PID=$!
+      trap "kill -9 $SPIN_PID" `seq 0 15`
+
+      sudo apt-get install -y nodejs npm > /dev/null 2>&1
+      sudo npm install -g --unsafe-perm node-red
+
+      kill -9 $SPIN_PID
+    else
+      echo "Could not install node-red. Please check https://nodered.org/docs/getting-started/local to install."
+    fi
+  fi
 }
 
 checkMosquitto(){
@@ -423,34 +485,31 @@ cleanup() {
 # ============================== Start installation ==============================
 
 DISPLCOLOR=${ORANGE}
-DISPLTEXT='   ____  _                 ___                           _    _          ____  '
+DISPLTEXT='   ____  _               ___  __  __  ____ _______ _______ '
 echoInColor
-DISPLTEXT='  / __ \| |               |__ \                         | |  | |   /\   |  _ \ '
+DISPLTEXT='  / __ \| |             |__ \|  \/  |/ __ \__   __|__   __|'
 echoInColor
-DISPLTEXT=" | |  | | |__  _   _ ___     ) |   ___  _ __   ___ _ __ | |__| |  /  \  | |_) |"
+DISPLTEXT=' | |  | | |__  _   _ ___   ) | \  / | |  | | | |     | |   '
 echoInColor
-DISPLTEXT=" | |  | | '_ \| | | / __|   / /   / _ \| '_ \ / _ \ '_ \|  __  | / /\ \ |  _ < "
+DISPLTEXT=' | |  | |  _ \| | | / __| / /| |\/| | |  | | | |     | |   '
 echoInColor
-DISPLTEXT=" | |__| | |_) | |_| \__ \  / /_  | (_) | |_) |  __/ | | | |  | |/ ____ \| |_) |"
+DISPLTEXT=' | |__| | |_) | |_| \__ \/ /_| |  | | |__| | | |     | |   '
 echoInColor
-DISPLTEXT="  \___\_\_.__/ \__,_|___/ |____|  \___/| .__/ \___|_| |_|_|  |_/_/    \_\____/ "
-echoInColor
-DISPLTEXT="                                       | |                                     "
-echoInColor
-DISPLTEXT="                                       |_|                                     "
+DISPLTEXT='  \___\_\_.__/ \__,_|___/____|_|  |_|\___\_\ |_|     |_|   '
 echoInColor
 DISPLTEXT=""
 echoInColor
 DISPLCOLOR=${NC}
-DISPLTEXT="Release date 30/03/2022 by ks@qbus.be"
+DISPLTEXT="Release date 07/10/2022 by ks@qbus.be"
 echoInColor
 echo ''
-DISPLTEXT="Welcome to the Qbus2openHAB (MQTT version) installer."
+DISPLTEXT="Welcome to the Qbus2MQTT installer."
 echoInColor
 echo ""
 
-checkOH
 checkMosquitto
+checkOH
+checkNodeRed
 checkSamba
 
 
@@ -513,28 +572,44 @@ if [[ $OH2UPDATE == "y" ]]; then
 	DISPLTEXT='* Purging openHAB...'
 	echoInColor
 	removeOpenHAB2
-	DISPLTEXT='* Install openHAB Stable (3.1.0)...'
+	DISPLTEXT='* Install openHAB Stable (3.x.x)...'
 	echoInColor
 	installOpenhab3
 	restoreOpenhabFiles
 	sudo chown --recursive openhab:openhab /etc/openhab /var/lib/openhab /var/log/openhab /usr/share/openhab
 	sudo chmod --recursive ug+wX /opt /etc/openhab /var/lib/openhab /var/log/openhab /usr/share/openhab
 	echo ''
+	DISPLTEXT='* Copy JAR file and restarting openHAB.'
+	echoInColor
+	copyJar
 fi
 
 if [[ $OHINSTALL == "y" ]]; then
-	# Install openHAB stable (3.2.0)
-	DISPLTEXT='* Install openHAB Stable (3.2.0)...'
-	echoInColor
-	installOpenhab3
-	sudo chown --recursive openhab:openhab /etc/openhab /var/lib/openhab /var/log/openhab /usr/share/openhab
-	sudo chmod --recursive ug+wX /opt /etc/openhab /var/lib/openhab /var/log/openhab /usr/share/openhab
-	echo ''
+  # Install openHAB stable (3.x.x)
+  DISPLTEXT='* Install openHAB Stable (3.x.x)...'
+  echoInColor
+  installOpenhab3
+  sudo chown --recursive openhab:openhab /etc/openhab /var/lib/openhab /var/log/openhab /usr/share/openhab
+  sudo chmod --recursive ug+wX /opt /etc/openhab /var/lib/openhab /var/log/openhab /usr/share/openhab
+  echo ''
+  DISPLTEXT='* Copy JAR file and restarting openHAB.'
+  echoInColor
+  copyJar
 fi
 
-DISPLTEXT='* Copy JAR file and restarting openHAB.'
-echoInColor
-copyJar
+# Install node-RED
+if [[ $INSTNR == "y" ]]; then
+  DISPLTEXT='* Install node-RED...'
+  echoInColor
+  installNodeRed
+  copyNodeRedQbus
+  sudo systemctl restart nodered.service > /dev/null 2>&1
+  echo ''
+else
+  copyNodeRedQbus
+  sudo systemctl restart nodered.service > /dev/null 2>&1
+  echo ''
+fi
 
 # Install SMB
 if [[ $INSTSAMBA == "y" ]]; then
