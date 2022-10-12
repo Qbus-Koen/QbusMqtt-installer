@@ -377,7 +377,7 @@ installNodeRed() {
     kill -9 $SPIN_PID
   else
     OS=$(lsb_release -a)
-    if [[ "$OS" == *"ebian"* ]]; then
+    if [[ "$OS" == *"ebian"* ]] || [[ "$OS" == *"buntu"* ]]; then
       echo "Debian system detected"
       echo "Installing node-RED with dependencies"
 
