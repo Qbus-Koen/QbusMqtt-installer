@@ -370,7 +370,7 @@ installNodeRed() {
     SPIN_PID=$!
     trap "kill -9 $SPIN_PID" `seq 0 15`
   
-    sudo apt install build-essential git curl > /dev/null 2>&1
+    sudo apt install build-essential git curl nodejs npm> /dev/null 2>&1
     bash <(curl -sL https://raw.githubusercontent.com/node-red/linux-installers/master/deb/update-nodejs-and-nodered)
     sudo systemctl enable nodered.service > /dev/null 2>&1
     
