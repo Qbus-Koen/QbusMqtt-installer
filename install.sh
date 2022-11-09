@@ -229,7 +229,7 @@ checkNodeRed() {
   
   NPM=''
   NPM=$(npm -v)
-  if [[ "$NPM" == *"-bash"* ]] then
+  if [[ "$NPM" == *"-bash"* ]]; then
     read -p "$(echo -e $YELLOW"     -We did not found an installation of node-red. Do you want to install node-red? (y/n)")" INSTNR
   else
     NR=$(npm list -g node-red) > /dev/null 2>&1
