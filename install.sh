@@ -390,8 +390,8 @@ installOpenhab3(){
 
 installNodeRed() {
   if [[ "$VENDOR" == *"ARM"* ]]; then
-    DISPLTEXT= "ARM system detected"
-    DISPLTEXT= "Installing node-RED with dependencies"
+    DISPLTEXT= 'ARM system detected'
+    DISPLTEXT= 'Installing node-RED with dependencies'
     DISPLCOLOR=${YELLOW}
     echoInColor
 
@@ -424,7 +424,7 @@ installNodeRed() {
 
       kill -9 $SPIN_PID
     else
-      DISPLTEXT= "Could not install node-red. Please check https://nodered.org/docs/getting-started/local to install."
+      DISPLTEXT= 'Could not install node-red. Please check https://nodered.org/docs/getting-started/local to install.'
       DISPLCOLOR=${YELLOW}
       echoInColor
     fi
