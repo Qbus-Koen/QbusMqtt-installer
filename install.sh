@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ============================== Define variables ==============================
-USER=''
+IUSER=''
 PASSWORD=''
 MQTTIP='localhost'
 MQTTPORT='1883'
@@ -151,7 +151,7 @@ installQbusMqttGw(){
 	echo '' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
 	echo '[Service]' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
 	echo 'Type=simple' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
-	echo 'ExecStart= /usr/bin/qbus/./qbusMqttGw -serial="QBUSMQTTGW" -daemon true -logbuflevel -1 -logtostderr true -storagedir /opt/qbus -mqttbroker "tcp://'$MQTTIP':'$MQTTPORT'" -mqttuser '$USER' -mqttpassword '$PASSWORD''| sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
+	echo 'ExecStart= /usr/bin/qbus/./qbusMqttGw -serial="QBUSMQTTGW" -daemon true -logbuflevel -1 -logtostderr true -storagedir /opt/qbus -mqttbroker "tcp://'$MQTTIP':'$MQTTPORT'" -mqttuser '$IUSER' -mqttpassword '$PASSWORD''| sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
 	echo 'PIDFile=/var/run/qbusmqttgw.pid' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
 	echo 'Restart=on-failure' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
 	echo 'RemainAfterExit=no' | sudo tee -a /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
@@ -227,14 +227,19 @@ checkNodeRed() {
   DISPLCOLOR=${YELLOW}
   echoInColor
   
-  NR=$(npm list -g node-red) > /dev/null 2>&1
-
-  if [[ "$NR" == *"node-red"* ]]; then
-    DISPLTEXT='     ->node-RED is installed!'
-    DISPLCOLOR=${GREEN}
-    echoInColor
-  else
+  NPM=''
+  NPM=$(npm -v)
+  if [[ "$NPM" == *"-bash"* ]] then
     read -p "$(echo -e $YELLOW"     -We did not found an installation of node-red. Do you want to install node-red? (y/n)")" INSTNR
+  else
+    NR=$(npm list -g node-red) > /dev/null 2>&1
+    if [[ "$NR" == *"node-red"* ]]; then
+      DISPLTEXT='     ->node-RED is installed!'
+      DISPLCOLOR=${GREEN}
+      echoInColor
+    else
+      read -p "$(echo -e $YELLOW"     -We did not found an installation of node-red. Do you want to install node-red? (y/n)")" INSTNR
+    fi
   fi
 }
 
@@ -370,7 +375,8 @@ installOpenhab3(){
   wget -qO - 'https://openhab.jfrog.io/artifactory/api/gpg/key/public' | sudo apt-key add - > /dev/null 2>&1
   sudo rm /etc/apt/sources.list.d/openhab.list > /dev/null 2>&1
   echo 'deb https://openhab.jfrog.io/artifactory/openhab-linuxpkg stable main' | sudo tee /etc/apt/sources.list.d/openhab.list > /dev/null 2>&1
-  sudo apt-get --assume-yes update && sudo apt-get --assume-yes install openhab > /dev/null 2>&1
+  sudo apt-get --assume-yes update  > /dev/null 2>&1
+  sudo apt-get --assume-yes install openhab > /dev/null 2>&1
 
   kill -9 $SPIN_PID
 }
@@ -381,22 +387,24 @@ installNodeRed() {
     DISPLTEXT= "Installing node-RED with dependencies"
     DISPLCOLOR=${YELLOW}
     echoInColor
-	
+
     spin &
     SPIN_PID=$!
     trap "kill -9 $SPIN_PID" `seq 0 15`
   
     sudo apt install -y build-essential git curl nodejs npm> /dev/null 2>&1
     updateNodejs
-    bash <(curl -sL https://raw.githubusercontent.com/node-red/linux-installers/master/deb/update-nodejs-and-nodered)
+    kill -9 $SPIN_PID
+    bash <(curl -sL https://raw.githubIUSERcontent.com/node-red/linux-installers/master/deb/update-nodejs-and-nodered)
     sudo systemctl enable nodered.service > /dev/null 2>&1
+    sudo systemctl start nodered.service > /dev/null 2>&1
     
     kill -9 $SPIN_PID
   else
     OS=$(lsb_release -a)
     if [[ "$OS" == *"ebian"* ]]; then
-      DISPLTEXT= "Debian system detected"
-      DISPLTEXT= "Installing node-RED with dependencies"
+      DISPLTEXT= 'Debian system detected'
+      DISPLTEXT= 'Installing node-RED with dependencies'
       DISPLCOLOR=${YELLOW}
       echoInColor
 
@@ -453,7 +461,7 @@ installMosquitto(){
 	DISPLCOLOR=${YELLOW}
 	echoInColor
   
-	sudo mosquitto_passwd -c /etc/mosquitto/pass $USER
+	sudo mosquitto_passwd -c /etc/mosquitto/pass $IUSER
  
  	spin &
 	SPIN_PID=$!
@@ -534,7 +542,7 @@ checkNodeRed
 checkSamba
 
 
-read -p "$(echo -e $YELLOW"-Enter the username you want to use for the Qbus Client to connect to the MQTT server: "$NC)" USER
+read -p "$(echo -e $YELLOW"-Enter the username you want to use for the Qbus Client to connect to the MQTT server: "$NC)" IUSER
 
 DISPLTEXT='-Enter the password you want to use for the Qbus Client to connect to the MQTT server: '
 DISPLCOLOR=${YELLOW}
@@ -588,6 +596,7 @@ installQbusMqttGw
 # Install openHAB
 if [[ $OH2UPDATE == "y" ]]; then
 	DISPLTEXT='* Making backup of openHAB2...'
+	DISPLCOLOR=${YELLOW}
 	echoInColor
 	backupOpenhabFiles
 	DISPLTEXT='* Purging openHAB...'
@@ -608,6 +617,7 @@ fi
 if [[ $OHINSTALL == "y" ]]; then
   # Install openHAB stable (3.x.x)
   DISPLTEXT='* Install openHAB Stable (3.x.x)...'
+  DISPLCOLOR=${YELLOW}
   echoInColor
   installOpenhab3
   sudo chown --recursive openhab:openhab /etc/openhab /var/lib/openhab /var/log/openhab /usr/share/openhab
@@ -621,10 +631,10 @@ fi
 # Install node-RED
 if [[ $INSTNR == "y" ]]; then
   DISPLTEXT='* Install node-RED...'
+  DISPLCOLOR=${YELLOW}
   echoInColor
   installNodeRed
   copyNodeRedQbus
-  sudo systemctl restart nodered.service > /dev/null 2>&1
   echo ''
 else
   copyNodeRedQbus
