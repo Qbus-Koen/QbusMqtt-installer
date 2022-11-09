@@ -82,6 +82,9 @@ checkPocessor() {
 			echoInColor
 			read -p "$(echo -e $RED"but we do not recommend this. Do you want to continue (on your own risk)? (y/n) "$NC)" CONTLIB
 			if [[ "$CONTLIB" == *"y"* ]]; then
+				DISPLTEXT='  -Installing 64bit dependencies.'
+				DISPLCOLOR=${YELLOW}
+				echoInColor
 				sudo apt-get install -y libc6:armhf libdbus-1-3:armhf libstdc++6:armhf > /dev/null 2>&1
 				sudo ln -s /lib/./arm-linux-gnueabihf/ld-2.31.so /lib/ld-linux.so.3 > /dev/null 2>&1
 				sudo ln -s /lib/./arm-linux-gnueabihf/libdbus-1.so.3 /lib/libdbus-1.so.3 > /dev/null 2>&1
@@ -128,6 +131,10 @@ installQbusMqttGw(){
 	sudo systemctl stop qbusmqtt > /dev/null 2>&1
 	
 	checkPocessor
+	
+	DISPLTEXT='  -Start installation of QbusMQTTGW.'
+	DISPLCOLOR=${YELLOW}
+	echoInColor
 	
 	sudo rm /lib/systemd/system/qbusmqtt.service > /dev/null 2>&1
 	
