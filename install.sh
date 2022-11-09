@@ -82,7 +82,7 @@ checkPocessor() {
 			echoInColor
 			read -p "$(echo -e $RED"but we do not recommend this. Do you want to continue (on your own risk)? (y/n) "$NC)" CONTLIB
 			if [[ "$CONTLIB" == *"y"* ]]; then
-				sudo apt-get install libc6:armhf libdbus-1-3:armhf libstdc++6:armhf > /dev/null 2>&1
+				sudo apt-get install -y libc6:armhf libdbus-1-3:armhf libstdc++6:armhf > /dev/null 2>&1
 				sudo ln -s /lib/./arm-linux-gnueabihf/ld-2.31.so /lib/ld-linux.so.3 > /dev/null 2>&1
 				sudo ln -s /lib/./arm-linux-gnueabihf/libdbus-1.so.3 /lib/libdbus-1.so.3 > /dev/null 2>&1
 				sudo ln -s /lib/./arm-linux-gnueabihf/libstdc++.so.6 /lib/libstdc++.so.6 > /dev/null 2>&1
@@ -208,12 +208,26 @@ checkOH(){
     fi
 }
 
+updateNodejs() {
+  DISPLTEXT='-- Updating nodejs...'
+  DISPLCOLOR=${YELLOW}
+  
+  spin &
+  SPIN_PID=$!
+  trap "kill -9 $SPIN_PID" `seq 0 15`
+  
+  curl -fsSL https://deb.nodesource.com/setup_19.x | sudo -E bash - > /dev/null 2>&1
+  sudo apt-get install -y nodejs > /dev/null 2>&1
+  
+  kill -9 $SPIN_PID
+}
+
 checkNodeRed() {
   DISPLTEXT='-- Checking node-RED...'
   DISPLCOLOR=${YELLOW}
   echoInColor
   
-  NR=$(npm list -g node-red)
+  NR=$(npm list -g node-red) > /dev/null 2>&1
 
   if [[ "$NR" == *"node-red"* ]]; then
     DISPLTEXT='     ->node-RED is installed!'
@@ -363,23 +377,28 @@ installOpenhab3(){
 
 installNodeRed() {
   if [[ "$VENDOR" == *"ARM"* ]]; then
-    echo "ARM system detected"
-    echo "Installing node-RED with dependencies"
-
+    DISPLTEXT= "ARM system detected"
+    DISPLTEXT= "Installing node-RED with dependencies"
+    DISPLCOLOR=${YELLOW}
+    echoInColor
+	
     spin &
     SPIN_PID=$!
     trap "kill -9 $SPIN_PID" `seq 0 15`
   
-    sudo apt install build-essential git curl nodejs npm> /dev/null 2>&1
+    sudo apt install -y build-essential git curl nodejs npm> /dev/null 2>&1
+    updateNodejs
     bash <(curl -sL https://raw.githubusercontent.com/node-red/linux-installers/master/deb/update-nodejs-and-nodered)
     sudo systemctl enable nodered.service > /dev/null 2>&1
     
     kill -9 $SPIN_PID
   else
     OS=$(lsb_release -a)
-    if [[ "$OS" == *"ebian"* ]] || [[ "$OS" == *"buntu"* ]]; then
-      echo "Debian system detected"
-      echo "Installing node-RED with dependencies"
+    if [[ "$OS" == *"ebian"* ]]; then
+      DISPLTEXT= "Debian system detected"
+      DISPLTEXT= "Installing node-RED with dependencies"
+      DISPLCOLOR=${YELLOW}
+      echoInColor
 
       spin &
       SPIN_PID=$!
@@ -390,7 +409,9 @@ installNodeRed() {
 
       kill -9 $SPIN_PID
     else
-      echo "Could not install node-red. Please check https://nodered.org/docs/getting-started/local to install."
+      DISPLTEXT= "Could not install node-red. Please check https://nodered.org/docs/getting-started/local to install."
+      DISPLCOLOR=${YELLOW}
+      echoInColor
     fi
   fi
 }
