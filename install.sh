@@ -74,13 +74,13 @@ checkPocessor() {
 		GW2USE='qbusMqttGw-arm'
 		if [[ "$BITS" == 64 ]]; then
 			# 64 BITS ARM
-			DISPLTEXT='We detected a 64 bit ARM processor. We do noet support this kind of processor.'
+			DISPLTEXT='  We detected a 64 bit ARM processor. We do noet support this kind of processor.'
 			DISPLCOLOR=${RED}
 			echoInColor
-			DISPLTEXT='It is possible to install libraries that makes it possible to run our 32 bit version on your 64 bit system,'
+			DISPLTEXT='  It is possible to install libraries that makes it possible to run our 32 bit version on your 64 bit system,'
 			DISPLCOLOR=${RED}
 			echoInColor
-			read -p "$(echo -e $RED"but we do not recommend this. Do you want to continue (on your own risk)? (y/n) "$NC)" CONTLIB
+			read -p "$(echo -e $RED"  but we do not recommend this. Do you want to continue (on your own risk)? (y/n) "$NC)" CONTLIB
 			if [[ "$CONTLIB" == *"y"* ]]; then
 				DISPLTEXT='  -Installing 64bit dependencies.'
 				DISPLCOLOR=${YELLOW}
@@ -390,8 +390,10 @@ installOpenhab3(){
 
 installNodeRed() {
   if [[ "$VENDOR" == *"ARM"* ]]; then
-    DISPLTEXT= 'ARM system detected'
-    DISPLTEXT= 'Installing node-RED with dependencies'
+    DISPLTEXT='ARM system detected'
+    DISPLCOLOR=${YELLOW}
+    echoInColor
+    DISPLTEXT='Installing node-RED with dependencies'
     DISPLCOLOR=${YELLOW}
     echoInColor
 
@@ -402,7 +404,7 @@ installNodeRed() {
     sudo apt install -y build-essential git curl nodejs npm> /dev/null 2>&1
     updateNodejs
     kill -9 $SPIN_PID
-	bash <(curl -sL https://raw.githubusercontent.com/node-red/linux-installers/master/deb/update-nodejs-and-nodered)
+    bash <(curl -sL https://raw.githubusercontent.com/node-red/linux-installers/master/deb/update-nodejs-and-nodered)
     sudo systemctl enable nodered.service > /dev/null 2>&1
     sudo systemctl start nodered.service > /dev/null 2>&1
     
@@ -410,8 +412,10 @@ installNodeRed() {
   else
     OS=$(lsb_release -a)
     if [[ "$OS" == *"ebian"* ]]; then
-      DISPLTEXT= 'Debian system detected'
-      DISPLTEXT= 'Installing node-RED with dependencies'
+      DISPLTEXT='Debian system detected'
+      DISPLCOLOR=${YELLOW}
+      echoInColor
+      DISPLTEXT='Installing node-RED with dependencies'
       DISPLCOLOR=${YELLOW}
       echoInColor
 
@@ -424,7 +428,7 @@ installNodeRed() {
 
       kill -9 $SPIN_PID
     else
-      DISPLTEXT= 'Could not install node-red. Please check https://nodered.org/docs/getting-started/local to install.'
+      DISPLTEXT='Could not install node-red. Please check https://nodered.org/docs/getting-started/local to install.'
       DISPLCOLOR=${YELLOW}
       echoInColor
     fi
