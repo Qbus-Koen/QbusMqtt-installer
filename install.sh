@@ -223,8 +223,12 @@ updateNodejs() {
   SPIN_PID=$!
   trap "kill -9 $SPIN_PID" `seq 0 15`
   
-  curl -fsSL https://deb.nodesource.com/setup_19.x | sudo -E bash - > /dev/null 2>&1
-  sudo apt-get install -y nodejs > /dev/null 2>&1
+  # Update npm
+  sudo npm install -g n > /dev/null 2>&1
+  sudo n latest > /dev/null 2>&1
+  hash -r > /dev/null 2>&1
+  sudo npm install -g npm@latest > /dev/null 2>&1
+  nvm install node > /dev/null 2>&1
   
   kill -9 $SPIN_PID
 }
@@ -384,7 +388,9 @@ installOpenhab3(){
   echo 'deb https://openhab.jfrog.io/artifactory/openhab-linuxpkg stable main' | sudo tee /etc/apt/sources.list.d/openhab.list > /dev/null 2>&1
   sudo apt-get --assume-yes update  > /dev/null 2>&1
   sudo apt-get --assume-yes install openhab > /dev/null 2>&1
-
+  sudo systemctl daemon-reload > /dev/null 2>&1
+  sudo systemctl enable openhab > /dev/null 2>&1
+  sudo systemctl start openhab > /dev/null 2>&1
   kill -9 $SPIN_PID
 }
 
@@ -423,11 +429,18 @@ installNodeRed() {
       SPIN_PID=$!
       trap "kill -9 $SPIN_PID" `seq 0 15`
 
-      sudo apt-get install -y nodejs npm > /dev/null 2>&1
-      sudo npm install -g --unsafe-perm node-red
+      sudo apt install -y build-essential git curl nodejs npm> /dev/null 2>&1
+      updateNodejs
+      kill -9 $SPIN_PID
+	  
+      bash <(curl -sL https://raw.githubusercontent.com/node-red/linux-installers/master/deb/update-nodejs-and-nodered)
+      sudo systemctl enable nodered.service > /dev/null 2>&1
+      sudo systemctl start nodered.service > /dev/null 2>&1
 
       kill -9 $SPIN_PID
     else
+      # sudo apt-get install -y nodejs npm > /dev/null 2>&1
+      # sudo npm install -g --unsafe-perm node-red
       DISPLTEXT='Could not install node-red. Please check https://nodered.org/docs/getting-started/local to install.'
       DISPLCOLOR=${YELLOW}
       echoInColor
