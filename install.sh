@@ -85,6 +85,8 @@ checkPocessor() {
 				DISPLTEXT='  -Installing 64bit dependencies.'
 				DISPLCOLOR=${YELLOW}
 				echoInColor
+				sudo dpkg --add-architecture armhf > /dev/null 2>&1
+				sudo apt-get update -y > /dev/null 2>&1
 				sudo apt-get install -y libc6:armhf libdbus-1-3:armhf libstdc++6:armhf > /dev/null 2>&1
 				sudo ln -s /lib/./arm-linux-gnueabihf/ld-2.31.so /lib/ld-linux.so.3 > /dev/null 2>&1
 				sudo ln -s /lib/./arm-linux-gnueabihf/libdbus-1.so.3 /lib/libdbus-1.so.3 > /dev/null 2>&1
