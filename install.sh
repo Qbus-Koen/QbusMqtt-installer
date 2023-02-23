@@ -415,8 +415,6 @@ installNodeRed() {
     bash <(curl -sL https://raw.githubusercontent.com/node-red/linux-installers/master/deb/update-nodejs-and-nodered)
     sudo systemctl enable nodered.service > /dev/null 2>&1
     sudo systemctl start nodered.service > /dev/null 2>&1
-    
-    kill -9 $SPIN_PID
   else
     OS=$(lsb_release -a)
     if [[ "$OS" == *"ebian"* ]]; then
