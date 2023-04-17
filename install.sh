@@ -58,7 +58,7 @@ installDependencies(){
 	SPIN_PID=$!
 	trap "kill -9 $SPIN_PID" `seq 0 15`
 
-	sudo apt-get install -y tftp > /dev/null 2>&1
+	sudo apt-get install -y wget tftp > /dev/null 2>&1
 	
 	
 	kill -9 $SPIN_PID
