@@ -553,7 +553,7 @@ echoInColor
 DISPLTEXT=""
 echoInColor
 DISPLCOLOR=${NC}
-DISPLTEXT="Release date 09/11/2022 by ks@qbus.be"
+DISPLTEXT="Release date 12/07/2023 by ks@qbus.be"
 echoInColor
 echo ''
 DISPLTEXT="Welcome to the Qbus2MQTT installer."
