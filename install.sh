@@ -74,7 +74,7 @@ checkPocessor() {
 		GW2USE='qbusMqttGw-arm'
 		if [[ "$BITS" == 64 ]]; then
 			# 64 BITS ARM
-			DISPLTEXT='  We detected a 64 bit ARM processor. We do noet support this kind of processor.'
+			DISPLTEXT='  We detected a 64 bit ARM processor. We do not support this kind of processor.'
 			DISPLCOLOR=${RED}
 			echoInColor
 			DISPLTEXT='  It is possible to install libraries that makes it possible to run our 32 bit version on your 64 bit system,'
@@ -187,7 +187,7 @@ checkOH(){
   if [[ $OH2 != "" ]]; then
     # OH2 found
     OH="OH2"
-    read -p "$(echo -e $YELLOW"     -We have detected openHAB2 running on your device. The Qbus Binding is developped for the newest version of openHAB (3). Do you agree that we remove openHAB2 and install openHAB3? (y/n)? " $NC)" OH2UPDATE
+    read -p "$(echo -e $YELLOW"     -We have detected openHAB2 running on your device. The Qbus Binding is developed for the newest version of openHAB (3). Do you agree that we remove openHAB2 and install openHAB3? (y/n)? " $NC)" OH2UPDATE
 
     elif [[ $OH3 != "" ]]; then
       # OH3 found, checking release
@@ -243,7 +243,7 @@ checkNodeRed() {
   NPM=''
   NPM=$(npm -v 2>/dev/null)
   if [[ "$NPM" == "" ]]; then
-    read -p "$(echo -e $YELLOW"     -We did not found an installation of node-red. Do you want to install node-red? (y/n)")" INSTNR
+    read -p "$(echo -e $YELLOW"     -We did not find an installation of node-red. Do you want to install node-red? (y/n)")" INSTNR
   else
     NR=$(npm list -g node-red) > /dev/null 2>&1
     if [[ "$NR" == *"node-red"* ]]; then
@@ -251,7 +251,7 @@ checkNodeRed() {
       DISPLCOLOR=${GREEN}
       echoInColor
     else
-      read -p "$(echo -e $YELLOW"     -We did not found an installation of node-red. Do you want to install node-red? (y/n)")" INSTNR
+      read -p "$(echo -e $YELLOW"     -We did not find an installation of node-red. Do you want to install node-red? (y/n)")" INSTNR
     fi
   fi
 }
@@ -289,7 +289,7 @@ copyJar(){
 	kill -9 $SPIN_PID
 	
 	DISPLCOLOR=${ORANGE}
-	DISPLTEXT="Please enter \"y\" en press enter to continue."
+	DISPLTEXT="Please enter \"y\" and press enter to continue."
 	echoInColor
 	sudo openhab-cli clean-cache
 	
@@ -345,7 +345,7 @@ checkSamba(){
       sudo smbpasswd -a openhab
     fi
   else
-  	read -p "$(echo -e $YELLOW"     -We did not detect Samba Share on your system. You don not really need SMB, but it makes it easier to configure openHAB things. Do you agree to install Samba share (y/n)? " $NC)" INSTSAMBA
+  	read -p "$(echo -e $YELLOW"     -We did not detect Samba Share on your system. You do not really need SMB, but it makes it easier to configure openHAB things. Do you agree to install Samba share (y/n)? " $NC)" INSTSAMBA
           
   	if [[ $INSTSAMBA == "n" ]]; then
   		DISPLTEXT='     -You choose not to install Samba Share. This means you have to configure openHAB things on this device.'
@@ -458,7 +458,7 @@ checkMosquitto(){
 		DISPLCOLOR=${GREEN}
 		echoInColor
   else
-    read -p "$(echo -e $YELLOW"     - We didn't found an installation of Mosquitto. We reccomend using Mosquitto as MQTT server. Do you want us to install Mosquitto (1), use your own MQTT server (2) or continue without a MQTT server (3)? " $NC)" INSTMOS
+    read -p "$(echo -e $YELLOW"     - We didn't find an installation of Mosquitto. We reccomend using Mosquitto as MQTT server. Do you want us to install Mosquitto (1), use your own MQTT server (2) or continue without a MQTT server (3)? " $NC)" INSTMOS
 
 	if [[ $INSTMOS == "2" ]]; then
 		read -p "$(echo -e $GREEN"         -Please enter the ip address of your MQTT server:  " $NC)" MQTTIP
@@ -691,7 +691,7 @@ if [[ $REBOOT == "y" ]]; then
 	echoInColor
 	sudo reboot
 else
-	DISPLTEXT='You choose to not reboot your system. If you run into problems, first trys to reboot!'
+	DISPLTEXT='You choose to not reboot your system. If you run into problems, first try to reboot!'
 	echoInColor
 	DISPLTEXT='We did a Clean Cache for openHAB. Please be patient and give openHAB some time to enable the bindings.'
 	echoInColor
