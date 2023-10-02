@@ -310,8 +310,9 @@ copyNodeRedQbus() {
   spin &
   SPIN_PID=$!
   trap "kill -9 $SPIN_PID" `seq 0 15`
-
-  npm install node-red-contrib-qbus
+  cd ~/.node-red > /dev/null 2>&1
+  npm install node-red-contrib-qbus > /dev/null 2>&1
+  cd  ~ > /dev/null 2>&1
 
   kill -9 $SPIN_PID
 }
